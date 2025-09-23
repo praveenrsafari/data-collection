@@ -21,13 +21,25 @@ function App() {
         <Layout>
           <Container maxWidth="xl" sx={{ py: 3 }}>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/constituencies" element={<Constituencies />} />
-              <Route path="/mandals" element={<Mandals />} />
-              <Route path="/panchayats" element={<Panchayats />} />
-              <Route path="/members" element={<Members />} />
-              <Route path="/xlsx" element={<XlsxManager />} />
+              <Route
+                path="/"
+                element={<Navigate to="/data-collection/dashboard" replace />}
+              />
+              <Route
+                path="/data-collection/dashboard"
+                element={<Dashboard />}
+              />
+              <Route
+                path="/data-collection/constituencies"
+                element={<Constituencies />}
+              />
+              <Route path="/data-collection/mandals" element={<Mandals />} />
+              <Route
+                path="/data-collection/panchayats"
+                element={<Panchayats />}
+              />
+              <Route path="/data-collection/members" element={<Members />} />
+              <Route path="/data-collection/xlsx" element={<XlsxManager />} />
             </Routes>
           </Container>
         </Layout>

@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
@@ -280,6 +286,137 @@ function extractWorkbookMetaFromSheets(sheetsObj) {
   return { district: "", constituency: "", mandal: "", panchayat: "" };
 }
 
+// Lightweight, memoized cell editor that commits on blur/Enter
+const CellEditor = React.memo(function CellEditor({ value, onCommit }) {
+  const [val, setVal] = useState(value ?? "");
+  useEffect(() => {
+    setVal(value ?? "");
+  }, [value]);
+  const handleBlur = useCallback(() => {
+    if ((val ?? "") !== (value ?? "")) onCommit(val);
+  }, [val, value, onCommit]);
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+  }, []);
+  return (
+    <input
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      style={{
+        width: "100%",
+        padding: 6,
+        border: "1px solid #e0e0e0",
+        borderRadius: 4,
+        fontSize: 14,
+      }}
+    />
+  );
+});
+
+// Virtualized body for large datasets (no extra deps)
+function VirtualBody({
+  rows,
+  columns,
+  rowHeight = 44,
+  onDeleteRow,
+  onCommitCell,
+}) {
+  const containerRef = useRef(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [containerH, setContainerH] = useState(480);
+
+  useEffect(() => {
+    function measure() {
+      const el = containerRef.current;
+      if (el) setContainerH(el.clientHeight);
+    }
+    measure();
+    const onResize = () => measure();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const handleScroll = useCallback((e) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
+
+  const total = rows.length;
+  const visibleCount = Math.max(1, Math.ceil(containerH / rowHeight) + 6);
+  const start = Math.max(0, Math.floor(scrollTop / rowHeight));
+  const end = Math.min(total, start + visibleCount);
+
+  const gridTemplate = useMemo(
+    () => `repeat(${columns.length}, minmax(140px, 1fr)) 56px`,
+    [columns.length]
+  );
+
+  return (
+    <Box
+      ref={containerRef}
+      sx={{
+        height: "60vh",
+        overflow: "auto",
+        position: "relative",
+        borderTop: "1px solid #eee",
+      }}
+      onScroll={handleScroll}
+    >
+      <Box sx={{ height: total * rowHeight, position: "relative" }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: start * rowHeight,
+            left: 0,
+            right: 0,
+          }}
+        >
+          {rows.slice(start, end).map((row, idx) => {
+            const rIdx = start + idx;
+            return (
+              <Box
+                key={rIdx}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: gridTemplate,
+                  alignItems: "center",
+                  height: rowHeight,
+                  px: 1,
+                  borderBottom: "1px solid #f0f0f0",
+                  "&:hover": { backgroundColor: "#fafafa" },
+                }}
+              >
+                {columns.map((col, cIdx) => (
+                  <Box key={`${col}__${cIdx}`} sx={{ pr: 1 }}>
+                    <CellEditor
+                      value={row[col] ?? ""}
+                      onCommit={(v) => onCommitCell(rIdx, col, v)}
+                    />
+                  </Box>
+                ))}
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Tooltip title="Delete row">
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => onDeleteRow(rIdx)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 export default function XlsxManager() {
   const [sheets, setSheets] = useState({});
   const [sheetNames, setSheetNames] = useState([]);
@@ -327,11 +464,17 @@ export default function XlsxManager() {
     })();
   }, []);
 
+  // Debounced persistence to localStorage to avoid frequent heavy writes
+  const saveTimerRef = useRef(null);
   useEffect(() => {
-    try {
-      localStorage.setItem("xlsx_library_v1", JSON.stringify(library));
-      localStorage.setItem("xlsx_active_id_v1", activeLibraryId);
-    } catch (_) {}
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem("xlsx_library_v1", JSON.stringify(library));
+        localStorage.setItem("xlsx_active_id_v1", activeLibraryId);
+      } catch (_) {}
+    }, 600); // debounce 600ms
+    return () => clearTimeout(saveTimerRef.current);
   }, [library, activeLibraryId]);
 
   const activeSheetName = useMemo(
@@ -683,22 +826,28 @@ export default function XlsxManager() {
     });
   }
 
-  function handleCellChange(rowIdx, column, value) {
-    setActiveSheets((prev) => {
-      const sheet = prev[activeSheetName] || {
-        rows: [],
-        columns: [],
-        merges: [],
-        colWidths: [],
-        rowHeights: [],
-        styles: {},
-      };
-      const rows = sheet.rows.map((r, i) =>
-        i === rowIdx ? { ...r, [column]: value } : r
-      );
-      return { ...prev, [activeSheetName]: { ...sheet, rows } };
-    });
-  }
+  // Commit a single cell change (called by CellEditor on blur/Enter)
+  const handleCellCommit = useCallback(
+    (rowIdx, column, newValue) => {
+      setActiveSheets((prev) => {
+        const sheet = prev[activeSheetName] || {
+          rows: [],
+          columns: [],
+          merges: [],
+          colWidths: [],
+          rowHeights: [],
+          styles: {},
+        };
+        const oldVal = sheet.rows?.[rowIdx]?.[column];
+        if ((oldVal ?? "") === (newValue ?? "")) return prev; // no-op
+        const rows = sheet.rows.map((r, i) =>
+          i === rowIdx ? { ...r, [column]: newValue } : r
+        );
+        return { ...prev, [activeSheetName]: { ...sheet, rows } };
+      });
+    },
+    [activeSheetName]
+  );
 
   function uniqueNewColumnName(existing, desiredBase) {
     const base =
@@ -1095,6 +1244,7 @@ export default function XlsxManager() {
             </Button>
           </Stack>
 
+          {/* Header table for column labels */}
           <TableContainer component={Paper} variant="outlined">
             <Table size="small" stickyHeader>
               <TableHead>
@@ -1107,37 +1257,17 @@ export default function XlsxManager() {
                   </TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {(activeSheet.rows || []).map((row, rIdx) => (
-                  <TableRow key={rIdx} hover>
-                    {activeSheet.columns.map((col, cIdx) => (
-                      <TableCell key={`${col}__${cIdx}`} sx={{ minWidth: 140 }}>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={row[col] ?? ""}
-                          onChange={(e) =>
-                            handleCellChange(rIdx, col, e.target.value)
-                          }
-                        />
-                      </TableCell>
-                    ))}
-                    <TableCell align="center">
-                      <Tooltip title="Delete row">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteRow(rIdx)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Virtualized body below header */}
+          <VirtualBody
+            rows={activeSheet.rows || []}
+            columns={activeSheet.columns}
+            rowHeight={44}
+            onDeleteRow={handleDeleteRow}
+            onCommitCell={handleCellCommit}
+          />
         </Box>
       ) : (
         <Typography color="text.secondary">No sheets loaded.</Typography>

@@ -23,12 +23,16 @@ import DescriptionIcon from "@mui/icons-material/Description";
 const drawerWidth = 260;
 
 const menu = [
-  // { to: "/dashboard", icon: <DashboardIcon />, text: "Dashboard" },
+  // { to: "/data-collection/dashboard", icon: <DashboardIcon />, text: "Dashboard" },
   // { to: "/constituencies", icon: <PublicIcon />, text: "Constituencies" },
-  // { to: "/mandals", icon: <CorporateFareIcon />, text: "Mandals" },
-  // { to: "/panchayats", icon: <MapIcon />, text: "Panchayats" },
-  // { to: "/members", icon: <GroupsIcon />, text: "Members" },
-  { to: "/xlsx", icon: <DescriptionIcon />, text: "XLSX Manager" },
+  // { to: "/data-collection/mandals", icon: <CorporateFareIcon />, text: "Mandals" },
+  // { to: "/data-collection/panchayats", icon: <MapIcon />, text: "Panchayats" },
+  // { to: "/data-collection/members", icon: <GroupsIcon />, text: "Members" },
+  {
+    to: "/data-collection/xlsx",
+    icon: <DescriptionIcon />,
+    text: "XLSX Manager",
+  },
 ];
 
 export default function Layout({ children }) {

@@ -3,10 +3,13 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "homepage": "https://github.com/reddivari9/data-collection.git",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
