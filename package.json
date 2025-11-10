@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.2",
   "type": "module",
-  "homepage": "https://github.com/praveenrsafari/data-collection.git",
+  "homepage": "https://praveenrsafari.github.io/data-collection",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
