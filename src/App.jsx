@@ -31,9 +31,9 @@ function App() {
             <Routes>
               <Route
                 path="/"
-                element={<Navigate to="/photo-upload" replace />}
+                element={<Navigate to="/data/photo-upload" replace />}
               />
-              <Route path="/photo-upload" element={<PhotoUpload />} />
+              <Route path="/data/photo-upload" element={<PhotoUpload />} />
             </Routes>
           </Container>
         </Layout>

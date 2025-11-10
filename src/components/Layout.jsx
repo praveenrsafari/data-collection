@@ -25,7 +25,7 @@ const drawerWidth = 260;
 
 const menu = [
   {
-    to: "/photo-upload",
+    to: "/data/photo-upload",
     icon: <PhotoCameraIcon />,
     text: "Photo Upload",
   },
