@@ -33,7 +33,10 @@ function App() {
                 path="/"
                 element={<Navigate to="/photo-upload" replace />}
               />
-              <Route path="/photo-upload" element={<PhotoUpload />} />
+              <Route
+                path="/data-collection/photo-upload"
+                element={<PhotoUpload />}
+              />
             </Routes>
           </Container>
         </Layout>
