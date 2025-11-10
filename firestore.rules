@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===== HIERARCHICAL PERSON DATA =====
+    // Path: constituencies/{constituency}/mandals/{mandal}/panchayats/{panchayat}/persons/{personId}
+    
+    match /constituencies/{constituency}/mandals/{mandal}/panchayats/{panchayat}/persons/{personId} {
+      // Allow read access to all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write access to all authenticated users
+      // In production, you may want to restrict this to specific roles
+      allow write: if request.auth != null;
+      
+      // Allow creation with proper data validation
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['committeeType', 'serialNo', 'constituency', 'mandal', 'panchayat'])
+        && request.resource.data.committeeType in ['party', 'affiliated']
+        && request.resource.data.constituency == constituency
+        && request.resource.data.mandal == mandal
+        && request.resource.data.panchayat == panchayat;
+      
+      // Allow update with timestamp validation
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'voterId', 'phone', 'village', 'partyPosition', 'presentCity', 'presentArea', 'country', 'working', 'qualification', 'cast', 'photoURL', 'documents', 'updatedAt']);
+      
+      // Allow delete
+      allow delete: if request.auth != null;
+    }
+    
+    // ===== PHOTO BATCHES =====
+    // Standalone photo uploads organized by location
+    match /photo-batches/{batchId} {
+      // Allow read access to all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write access to all authenticated users
+      allow write: if request.auth != null;
+    }
+    
+    // ===== LEGACY SUPPORT (Optional) =====
+    // If you have old data in flat structure, keep these rules temporarily
+    match /persons/{personId} {
+      // Allow read access
+      allow read: if request.auth != null;
+      
+      // Allow write access (for migration purposes)
+      allow write: if request.auth != null;
+    }
+    
+    // ===== DEVELOPMENT MODE (TEMPORARY) =====
+    // IMPORTANT: Remove or comment out these rules in production!
+    // These rules allow unrestricted access for development and testing
+    
+    // Uncomment the following lines for development (allows all access without authentication)
+    // match /{document=**} {
+    //   allow read, write: if true;
+    // }
+  }
+}
+

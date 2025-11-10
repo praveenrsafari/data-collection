@@ -29,7 +29,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import FolderDeleteIcon from "@mui/icons-material/FolderDelete";
 import * as XLSX from "xlsx";
-import defaultWorkbookUrl from "../assets/Jogivaripalli Committee updated.xlsx?url";
+// import defaultWorkbookUrl from "../assets/Jogivaripalli Committee updated.xlsx?url";
 
 // ExcelJS CDN loader (avoids bundler resolution issues)
 let excelJsLoadingPromise = null;

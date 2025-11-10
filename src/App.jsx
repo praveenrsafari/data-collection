@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -11,9 +11,17 @@ import Mandals from "./pages/Mandals.jsx";
 import Panchayats from "./pages/Panchayats.jsx";
 import Members from "./pages/Members.jsx";
 import XlsxManager from "./pages/XlsxManager.jsx";
+import PhotoUpload from "./pages/PhotoUpload.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
+import { testFirestoreConnection } from "./firebase/testConnection.js";
 
 function App() {
+  // Test Firebase connection on app load
+  useEffect(() => {
+    console.log("🚀 Running Firebase connection test...");
+    testFirestoreConnection();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -23,23 +31,9 @@ function App() {
             <Routes>
               <Route
                 path="/"
-                element={<Navigate to="/data-collection/dashboard" replace />}
+                element={<Navigate to="/photo-upload" replace />}
               />
-              <Route
-                path="/data-collection/dashboard"
-                element={<Dashboard />}
-              />
-              <Route
-                path="/data-collection/constituencies"
-                element={<Constituencies />}
-              />
-              <Route path="/data-collection/mandals" element={<Mandals />} />
-              <Route
-                path="/data-collection/panchayats"
-                element={<Panchayats />}
-              />
-              <Route path="/data-collection/members" element={<Members />} />
-              <Route path="/data-collection/xlsx" element={<XlsxManager />} />
+              <Route path="/photo-upload" element={<PhotoUpload />} />
             </Routes>
           </Container>
         </Layout>

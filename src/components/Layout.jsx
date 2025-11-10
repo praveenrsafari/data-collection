@@ -19,19 +19,15 @@ import PublicIcon from "@mui/icons-material/Public";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import GroupsIcon from "@mui/icons-material/Groups";
 import DescriptionIcon from "@mui/icons-material/Description";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 const drawerWidth = 260;
 
 const menu = [
-  // { to: "/data-collection/dashboard", icon: <DashboardIcon />, text: "Dashboard" },
-  // { to: "/constituencies", icon: <PublicIcon />, text: "Constituencies" },
-  // { to: "/data-collection/mandals", icon: <CorporateFareIcon />, text: "Mandals" },
-  // { to: "/data-collection/panchayats", icon: <MapIcon />, text: "Panchayats" },
-  // { to: "/data-collection/members", icon: <GroupsIcon />, text: "Members" },
   {
-    to: "/data-collection/xlsx",
-    icon: <DescriptionIcon />,
-    text: "XLSX Manager",
+    to: "/photo-upload",
+    icon: <PhotoCameraIcon />,
+    text: "Photo Upload",
   },
 ];
 

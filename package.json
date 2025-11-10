@@ -1,27 +1,30 @@
 {
   "name": "ysrcp-directory-app",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
-  "homepage": "https://github.com/reddivari9/data-collection.git",
+  "homepage": "https://github.com/praveenrsafari/data-collection.git",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
+    "@mui/x-data-grid": "^8.17.0",
     "dayjs": "^1.11.18",
     "exceljs": "^4.4.0",
+    "firebase": "^12.5.0",
     "papaparse": "^5.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
+    "tesseract.js": "^6.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
